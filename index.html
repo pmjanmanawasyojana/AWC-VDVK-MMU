@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PM-JANMAN Survey</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1D6A55">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#F2F5F3;--surface:#FFFFFF;--ink:#15231E;--muted:#56675E;--line:#D0DAD4;--soft:#E7EEE9;--accent:#1D6A55;--accent-ink:#FFFFFF;--warn:#8F4608;--warn-bg:#FBEBD9;--ok:#1D6A55;--ok-bg:#DCEFE7;
+  --f-body:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans","Noto Sans Gujarati",Arial,sans-serif;--f-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Roboto Mono",monospace;color-scheme:light}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0E1613;--surface:#16211D;--ink:#E5EEE9;--muted:#93A69C;--line:#2A3B34;--soft:#1F2D27;--accent:#4FBF9F;--accent-ink:#06231A;--warn:#E7A663;--warn-bg:#3A2A17;--ok:#6FD3B3;--ok-bg:#183328;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0E1613;--surface:#16211D;--ink:#E5EEE9;--muted:#93A69C;--line:#2A3B34;--soft:#1F2D27;--accent:#4FBF9F;--accent-ink:#06231A;--warn:#E7A663;--warn-bg:#3A2A17;--ok:#6FD3B3;--ok-bg:#183328;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;padding:16px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.eyebrow{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
+h1{font-size:24px;line-height:1.2;margin:0;font-weight:700;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:6px 0 0;max-width:56ch}
+.forms{display:flex;flex-direction:column;gap:12px}
+a.form{display:flex;gap:14px;align-items:center;padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:10px;color:var(--ink);text-decoration:none;min-height:84px}
+a.form:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+a.form:active{background:var(--soft)}
+.ic{flex:none;width:48px;height:48px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
+.ic svg{width:26px;height:26px}
+.txt{flex:1;min-width:0}
+.txt b{display:block;font-size:17px;line-height:1.25}
+.txt span{display:block;font-size:13.5px;color:var(--muted);margin-top:2px}
+.count{flex:none;text-align:right;font-variant-numeric:tabular-nums}
+.count b{display:block;font-size:22px;line-height:1}
+.count span{font-size:12px;color:var(--muted)}
+.soon{padding:14px 16px;border:1.5px dashed var(--line);border-radius:10px;color:var(--muted);font-size:14px}
+.note{padding:10px 12px;border-radius:6px;font-size:13.5px;background:var(--ok-bg);color:var(--ink)}
+.note.warn{background:var(--warn-bg)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Ministry of Tribal Affairs · GTRTS</p>
+    <h1>PM-JANMAN Survey</h1>
+    <p class="sub">Choose a form. Each form keeps its own saved entries and photos on this phone and makes its own Excel file. Works without internet.</p>
+  </header>
+  <p class="note" id="status">Works without internet. Entries are saved on this phone.</p>
+  <nav class="forms" aria-label="Survey forms">
+    <a class="form" href="mmu.html">
+      <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="13" height="10" rx="1"/><path d="M15 10h4l3 3v4h-7"/><circle cx="6.5" cy="18" r="1.8"/><circle cx="17.5" cy="18" r="1.8"/><path d="M8.5 9.5v5M6 12h5"/></svg></span>
+      <span class="txt"><b>Mobile Medical Unit Survey</b><span>MMU / MHU · Part D</span></span>
+      <span class="count"><b id="n-mmu">0</b><span>saved</span></span>
+    </a>
+    <a class="form" href="awc.html">
+      <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="9" r="2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M15 20c0-2.2 1-4 3-4s3 1.8 3 4"/></svg></span>
+      <span class="txt"><b>Anganwadi Centre Survey</b><span>AWC · Part C</span></span>
+      <span class="count"><b id="n-awc">0</b><span>saved</span></span>
+    </a>
+    <a class="form" href="vdvk.html">
+      <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V11"/><path d="M12 11c0-4 3-7 7-7 0 4-3 7-7 7z"/><path d="M12 14c0-3-2.5-5.5-6-5.5 0 3 2.5 5.5 6 5.5z"/></svg></span>
+      <span class="txt"><b>Van Dhan Vikas Kendra Survey</b><span>VDVK · Part E</span></span>
+      <span class="count"><b id="n-vdvk">0</b><span>saved</span></span>
+    </a>
+  </nav>
+</div>
+<script>
+(function(){
+  function count(k){ try{ var a=JSON.parse(localStorage.getItem(k)||'[]'); return Array.isArray(a)?a.length:0; }catch(e){ return 0; } }
+  function show(){ document.getElementById('n-mmu').textContent=count('pmj_mmu_entries_v1'); document.getElementById('n-awc').textContent=count('pmj_awc_entries_v1'); document.getElementById('n-vdvk').textContent=count('pmj_vdvk_entries_v1'); }
+  show(); window.addEventListener('pageshow',show);
+  var st=document.getElementById('status');
+  if(/^(content|file):$/.test(location.protocol)){ st.className='note warn'; st.textContent='This app is opened as a file. For the GPS button and offline use, open it from its web link in Chrome and use Add to Home screen.'; }
+  else if(!navigator.onLine){ st.textContent='No internet now. The app still works: entries are saved on this phone.'; }
+})();
+</script>
+<script>
+/* App: keep every form on the phone so the app opens without internet. */
+if('serviceWorker' in navigator && location.protocol==='https:'){
+  window.addEventListener('load',function(){ navigator.serviceWorker.register('sw.js').catch(function(){}); });
+}
+</script>
+</body>
+</html>
