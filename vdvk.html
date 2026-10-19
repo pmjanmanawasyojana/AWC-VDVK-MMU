@@ -72,13 +72,14 @@ p{margin:0}
 .msg{font-size:13px;color:var(--bad);font-weight:600}
 .field.err select,.field.err input[type=text],.field.err input[type=date],.field.err textarea{border-color:var(--bad)}
 .field.err .chip span{border-color:var(--bad)}
-input[type=text],input[type=date],textarea,select{
+input[type=text],input[type=search],input[type=date],textarea,select{
   width:100%;min-height:44px;padding:9px 12px;border:1.5px solid var(--line);border-radius:6px;
   background:var(--surface);color:var(--ink);font:inherit;font-size:16px;
 }
 textarea{resize:vertical;min-height:84px}
 input[readonly]{background:var(--soft);color:var(--muted)}
 select{appearance:auto}
+.bsearch{margin-bottom:8px}
 input.mono{font-family:var(--f-mono);letter-spacing:.02em}
 .idrow{display:flex;gap:8px}
 .idrow input{flex:1;min-width:0}
@@ -527,8 +528,9 @@ function fieldHtml(f){
   if(isR){
     ctl='<div class="chips" role="radiogroup" aria-labelledby="'+id+'_l">'+f.opts.map((o,i)=>'<label class="chip"><input type="radio" name="'+f.k+'" id="'+id+'_'+i+'" value="'+esc(o)+'"><span>'+esc(o)+'</span></label>').join('')+'</div>';
     if(f.k==='photo') ctl+='<div class="photobox"><div class="photobtns"><button class="btn small" type="button" id="photoCam">Take photo</button><button class="btn small ghost" type="button" id="photoGal">Choose from gallery</button></div><input type="file" id="photoCamIn" accept="image/*" capture="environment" class="sr" tabindex="-1" aria-label="Take a photograph"><input type="file" id="photoGalIn" accept="image/*" multiple class="sr" tabindex="-1" aria-label="Choose photographs from the gallery"><div class="thumbs" id="thumbs"></div><div class="hint" id="photoMsg" role="status"></div></div>';
-  } else if(f.cascade){
+  } else if(f.cascade||['unit','district','taluka','village'].includes(f.list)){
     ctl='<select id="'+id+'"></select>';
+    if(f.list==='unit') ctl='<input type="search" id="uq" class="bsearch" placeholder="Search by name" aria-label="Search by name" autocomplete="off" enterkeyhint="search">'+ctl;
   } else if(f.type==='textarea'){
     ctl='<textarea id="'+id+'" rows="3"></textarea>';
   } else {
@@ -579,17 +581,33 @@ function setOpts(k,items,ph){
   el.value=cur;
 }
 const byName=(a,b)=>a.localeCompare(b);
+function setOpts(k,items,ph){
+  const el=$('f_'+k); if(!el||el.tagName!=='SELECT') return; const cur=el.value; el.innerHTML='';
+  const first=document.createElement('option'); first.value=''; first.textContent=ph; el.appendChild(first);
+  items.forEach(x=>{const o=document.createElement('option'); o.value=x; o.textContent=x; el.appendChild(o);});
+  if(cur&&!items.some(x=>x===cur)){const o=document.createElement('option');o.value=cur;o.textContent=cur;el.appendChild(o);}
+  el.value=cur;
+}
+function clearUq(){ const q=$('uq'); if(q) q.value=''; }
 function cascade(){
-  const fill=(id,arr)=>{const dl=$(id); if(!dl) return; dl.innerHTML=''; Array.from(new Set(arr.filter(Boolean))).sort((a,b)=>a.localeCompare(b)).forEach(x=>{const o=document.createElement('option'); o.value=x; dl.appendChild(o);});};
-  const dEl=$('f_district'), tEl=$('f_taluka');
-  const dv=dEl?dEl.value.trim():'', tv=tEl?tEl.value.trim():'';
+  // Every list is a dropdown, sorted A to Z. District > taluka > village narrow each other, and the
+  // name list shows only the names in the chosen district / taluka / village that contain the search words.
+  const uniq=arr=>Array.from(new Set(arr.filter(Boolean).map(x=>String(x).trim()))).sort((a,b)=>a.localeCompare(b,'en',{sensitivity:'base'}));
+  const val=k=>{const el=$('f_'+k); return el?el.value.trim():'';};
+  const dv=val('district'), tv=val('taluka'), vv=val('village');
   const dk=Object.keys(SAMPLE).find(x=>lc(x)===lc(dv));
   const tk=dk&&Object.keys(SAMPLE[dk]).find(x=>lc(x)===lc(tv));
   const inD=e=>!dv||lc(e.district)===lc(dv), inT=e=>inD(e)&&(!tv||lc(e.taluka)===lc(tv));
-  fill('dl_unit',REF.map(r=>r[UKEY]));
-  fill('dl_district',Object.keys(SAMPLE).concat(entries.map(e=>e.district)));
-  fill('dl_taluka',(dk?Object.keys(SAMPLE[dk]):[]).concat(entries.filter(inD).map(e=>e.taluka)));
-  fill('dl_village',(tk?SAMPLE[dk][tk]:[]).concat(entries.filter(inT).map(e=>e.village)));
+  setOpts('district',uniq(Object.keys(SAMPLE).concat(entries.map(e=>e.district))),'Choose district');
+  const tl=uniq((dk?Object.keys(SAMPLE[dk]):[]).concat(entries.filter(inD).map(e=>e.taluka)));
+  setOpts('taluka',tl,dv?'Choose taluka':'Choose district first');
+  const vls=uniq((tk&&Array.isArray(SAMPLE[dk][tk])?SAMPLE[dk][tk]:[]).concat(entries.filter(inT).map(e=>e.village)));
+  setOpts('village',vls,tv?'Choose village':'Choose taluka first');
+  const q=$('uq'), words=q?lc(q.value).split(/\s+/).filter(Boolean):[];
+  const has=k=>!!$('f_'+k);
+  const pool=REF.filter(r=>(!has('district')||!dv||lc(r.district)===lc(dv))&&(!has('taluka')||!tv||lc(r.taluka)===lc(tv))&&(!has('village')||!vv||String(r.village||'').split(',').some(x=>lc(x)===lc(vv))));
+  const names=uniq(pool.map(r=>r[UKEY])).filter(n=>words.every(w=>lc(n).includes(w)));
+  setOpts(UKEY,names,words.length?(names.length?'Choose from '+names.length+' matching':'Nothing matches "'+q.value.trim()+'"'):'Choose from list ('+names.length+')');
 }
 function newSurveyId(){const a='ABCDEFGHJKMNPQRSTUVWXYZ23456789';let s='VD-';for(let i=0;i<6;i++)s+=a[Math.floor(Math.random()*a.length)];return s;}
 function applyGating(){const v=collect(); F.forEach(f=>{ if(WR[f.k]) WR[f.k].hidden=!isVisible(f,v); }); return v;}
@@ -614,6 +632,7 @@ function setEditing(rec){
   $('saveBtn').textContent=rec?'Save changes':'Save entry';
 }
 function resetForm(keepDraft){
+  clearUq();
   if(!keepDraft) clearDraft(); gpsStop();
   F.forEach(f=>{
     if(f.type==='radio') document.querySelectorAll('input[name="'+f.k+'"]').forEach(i=>{i.checked=false;});
@@ -624,6 +643,7 @@ function resetForm(keepDraft){
   applyDefaults(); setVal('institution',FIXED_UNI); cascade(); clearErrors(); updateProgress(applyGating());
 }
 function fillForm(rec){
+  clearUq();
   F.forEach(f=>{
     const v=rec[f.k]==null?'':String(rec[f.k]);
     if(f.type==='radio') document.querySelectorAll('input[name="'+f.k+'"]').forEach(i=>{i.checked=(i.value===v);});
@@ -635,10 +655,13 @@ function fillForm(rec){
 }
 function onFormInput(e){
   const t=e.target; if(!t||(!t.id&&!t.name)) return;
+  if(t.id==='uq'){ if(e.type==='input') cascade(); return; }
   const w=t.closest('.field[data-k]');
   if(w){ w.classList.remove('err'); const m=w.querySelector('.msg'); if(m) m.hidden=true; }
   if(t.id==='f_'+UKEY){ const hit=REF.find(r=>lc(r[UKEY])===lc(t.value.trim())); if(hit){ Object.keys(hit).forEach(k=>{ if(k!==UKEY&&$('f_'+k)) setVal(k,hit[k]); }); } cascade(); applyGating(); }
-  if(t.id==='f_district'||t.id==='f_taluka'||t.id==='f_village') cascade();
+  if(t.id==='f_district'){ setVal('taluka',''); setVal('village',''); cascade(); }
+  else if(t.id==='f_taluka'){ setVal('village',''); cascade(); }
+  else if(t.id==='f_village') cascade();
   if(t.id==='f_gps') gpsLink();
   updateProgress(applyGating()); saveDraft();
 }
